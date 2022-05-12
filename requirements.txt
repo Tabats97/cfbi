@@ -1,0 +1,9 @@
+pyaudio
+SpeechRecognition
+selenium
+pyttsx3
+opencv-python
+cvzone
+pynput
+mediapipe
+autopy
