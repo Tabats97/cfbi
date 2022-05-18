@@ -12,7 +12,7 @@ ordinals = {
     "last": -1
 }
 
-settings = "user-data-dir=C:\\Users\\gabri\\AppData\\Local\\Google\\Chrome\\User Data\\Default"
+settings = "user-data-dir=C:\\Users\\Tabats\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1"
 dir_path = os.path.abspath(os.curdir)
 
 # download the Chrome web driver associated to the browser version. In order to avoid cookie settings my default Chrome

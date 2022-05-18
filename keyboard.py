@@ -31,6 +31,9 @@ class Keyboard:
     def is_up(self):
         return self.up
 
+    def get_keyboard(self):
+        return self.keyboard
+
     def create_keyboard(self):
         for i in range(len(self.keys)):
             for j, key in enumerate(self.keys[i]):
@@ -40,3 +43,6 @@ class Keyboard:
                     self.keyboard.append(Key([250 * j + 50, 85 * i + 50], key, [250, 70]))
                 else:
                     self.keyboard.append(Key([85 * j + 50, 85 * i + 50], key))
+
+        return self
+

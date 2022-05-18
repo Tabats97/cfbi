@@ -7,3 +7,4 @@ cvzone
 pynput
 mediapipe
 autopy
+numpy

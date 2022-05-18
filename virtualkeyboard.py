@@ -1,13 +1,11 @@
 import cv2
 import time
-from cvzone.HandTrackingModule import HandDetector
 from pynput.keyboard import Key, Controller
 from keyboard import Keyboard
 
-
-keyboard = Keyboard()
-Keyboard.create_keyboard(keyboard)
+keyboard = Keyboard().create_keyboard()
 controller = Controller()
+lastClick = time.time()
 
 
 class VirtualKeyboard:
@@ -15,30 +13,32 @@ class VirtualKeyboard:
         self.img = img
         self.hand_detector = hand_detector
 
-    def run(self):
-        self.img = draw_keyboard(self.img, keyboard.keyboard)
-        for key in keyboard.keyboard:
+    def run(self, lmList):
+        global lastClick
+        global keyboard
+        self.img = draw_keyboard(self.img, keyboard.get_keyboard())
+        for key in keyboard.get_keyboard():
             x, y = key.pos
             w, h = key.size
 
             if x < lmList[8][0] < x + w and y < lmList[8][1] < y + h:
-                draw_interaction(img, key.pos, key.size, key.text, (50, 50, 50))
-                distance, _ = hand_detector.findDistance(lmList[8][0:2], lmList[12][0:2])
+                draw_interaction(self.img, key.pos, key.size, key.text, (50, 50, 50))
+                distance, _ = self.hand_detector.findDistance(lmList[8][0:2], lmList[12][0:2])
 
                 if distance < 30 and time.time() - lastClick > 0.75:
                     if key.text == "Shift":
-                        if Keyboard.is_up(keyboard):
-                            keyboard = Keyboard(False)
+                        if keyboard.is_up():
+                            new_keyboard = Keyboard(False).create_keyboard()
                         else:
-                            keyboard = Keyboard()
+                            new_keyboard = Keyboard().create_keyboard()
 
-                        Keyboard.create_keyboard(keyboard)
-                        img = draw_keyboard(img, keyboard.keyboard)
+                        keyboard = new_keyboard
+                        self.img = draw_keyboard(self.img, keyboard.get_keyboard())
                     else:
                         command = parse_command(key.text)
                         controller.press(command)
                         controller.release(command)
-                        draw_interaction(img, key.pos, key.size, key.text, (0, 71, 171))
+                        draw_interaction(self.img, key.pos, key.size, key.text, (0, 71, 171))
 
                     lastClick = time.time()
 
