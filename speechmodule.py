@@ -1,9 +1,8 @@
+#!/usr/bin/python
 import pyttsx3
 from selenium import webdriver
 import speech_recognition as sr
 import os
-
-from selenium.webdriver.common.keys import Keys
 
 ordinals = {
     "first": 0,
@@ -12,14 +11,14 @@ ordinals = {
     "last": -1
 }
 
-settings = "user-data-dir=C:\\Users\\Tabats\\AppData\\Local\\Google\\Chrome\\User Data\\Profile 1"
+settings = "user-data-dir=C:\\Users\\Tabats\\AppData\\Local\\Google\\Chrome\\User Data\\Default"
 dir_path = os.path.abspath(os.curdir)
 
 # download the Chrome web driver associated to the browser version. In order to avoid cookie settings my default Chrome
 # settings are imported
 option = webdriver.ChromeOptions()
 option.add_argument(settings)
-driver = webdriver.Chrome(executable_path=dir_path + '\chromedriver.exe', chrome_options=option)
+driver = webdriver.Chrome(executable_path=dir_path + '\chromedriver', chrome_options=option)
 
 
 # initialization of the engine
@@ -36,7 +35,7 @@ recognizer = sr.Recognizer()
 
 # set these parameters to adjust microphone input sensibility (they depend on the specific device)
 recognizer.dynamic_energy_threshold = False
-recognizer.energy_threshold = 800
+recognizer.energy_threshold = 600
 
 # Microphone entity. The device_index parameter needs to be changed according to the input device that you want to use
 microphone = sr.Microphone(device_index=1)

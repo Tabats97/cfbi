@@ -13,10 +13,14 @@ class VirtualKeyboard:
         self.img = img
         self.hand_detector = hand_detector
 
-    def run(self, lmList):
-        global lastClick
-        global keyboard
+    def run(self, hand):
+
+        global lastClick, keyboard
+
+        lmList = hand["lmList"]
+        fingers = self.hand_detector.fingersUp(hand)
         self.img = draw_keyboard(self.img, keyboard.get_keyboard())
+
         for key in keyboard.get_keyboard():
             x, y = key.pos
             w, h = key.size
@@ -25,7 +29,7 @@ class VirtualKeyboard:
                 draw_interaction(self.img, key.pos, key.size, key.text, (50, 50, 50))
                 distance, _ = self.hand_detector.findDistance(lmList[8][0:2], lmList[12][0:2])
 
-                if distance < 30 and time.time() - lastClick > 0.75:
+                if distance < 15 and time.time() - lastClick > 0.75 and fingers[1] == 1 and fingers[2] == 1:
                     if key.text == "Shift":
                         if keyboard.is_up():
                             new_keyboard = Keyboard(False).create_keyboard()

@@ -1,12 +1,15 @@
+import time
+
 import autopy
 import cv2
 import numpy as np
 
 wScr, hScr = autopy.screen.size()
 frameR = 150
-smooth_value = 3
+smooth_value = 2.5
 plocX, plocY = 0, 0
 
+lastclick = time.time()
 
 class VirtualMouse:
     def __init__(self, img, hand_detector):
@@ -15,7 +18,8 @@ class VirtualMouse:
         self.plocX, self.plocY = plocX, plocY
 
     def run(self, hand):
-        global plocX, plocY
+        global plocX, plocY, lastclick
+
         fingers = self.hand_detector.fingersUp(hand)
         lmList = hand["lmList"]
         x1, y1 = lmList[8][:2]
@@ -31,13 +35,14 @@ class VirtualMouse:
             clocY = self.plocY + (y - self.plocY) / smooth_value
 
             try:
-                autopy.mouse.move(clocX, clocY)
+                autopy.mouse.move(wScr - clocX, clocY)
                 plocX, plocY = clocX, clocY
             except:
                 pass
 
         # Click mouse if index and middle are up
-        if fingers[1] == 1 and fingers[2] == 1:
-            distance, _ = self.hand_detector.findDistance(lmList[8][0:2], lmList[12][0:2])
-            #if distance < 30:
-                #autopy.mouse.click()
+        if time.time() - lastclick > 0.75 and fingers[1] == 1 and fingers[2] == 1:
+            distance, _ = self.hand_detector.findDistance(lmList[8][:2], lmList[12][:2])
+            if distance < 20:
+                autopy.mouse.click()
+                lastclick = time.time()

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import cv2
 import time
 from cvzone.HandTrackingModule import HandDetector
@@ -31,12 +32,11 @@ while True:
         # getting all info about one hand
         hand = hands[0]
         lmList = hand["lmList"] # list of 21 landmark points
-        fingers = hand_detector.fingersUp(hand)
 
         if lmList:
             distance, _ = hand_detector.findDistance(lmList[4][0:2], lmList[20][0:2])
             if distance > 150 and gestural_modality == "Mouse" and time.time() - lastClick > 0.75:
-                VirtualKeyboard(img, hand_detector).run(lmList)
+                VirtualKeyboard(img, hand_detector).run(hand)
                 gestural_modality = "Keyboard"
                 lastClick = time.time()
 
@@ -49,7 +49,7 @@ while True:
                 VirtualMouse(img, hand_detector).run(hand)
 
             else:
-                VirtualKeyboard(img, hand_detector).run(lmList)
+                VirtualKeyboard(img, hand_detector).run(hand)
 
     cv2.imshow("Covid Free Browser Interaction", img)
     cv2.waitKey(1)

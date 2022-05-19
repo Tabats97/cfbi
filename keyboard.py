@@ -38,11 +38,10 @@ class Keyboard:
         for i in range(len(self.keys)):
             for j, key in enumerate(self.keys[i]):
                 if key == "<--" or key == "Shift":
-                    self.keyboard.append(Key([85 * j + 50, 85 * i + 50], key, [120, 70]))
+                    self.keyboard.append(Key([90 * j + 50, 105 * i + 50], key, [120, 70]))
                 elif key == "Space":
-                    self.keyboard.append(Key([250 * j + 50, 85 * i + 50], key, [250, 70]))
+                    self.keyboard.append(Key([250 * j + 50, 105 * i + 50], key, [250, 70]))
                 else:
-                    self.keyboard.append(Key([85 * j + 50, 85 * i + 50], key))
+                    self.keyboard.append(Key([90 * j + 50, 105 * i + 50], key))
 
         return self
-
