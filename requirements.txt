@@ -8,3 +8,4 @@ pynput
 mediapipe
 autopy
 numpy
+psutil

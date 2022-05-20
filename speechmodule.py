@@ -1,8 +1,9 @@
-#!/usr/bin/python
+
 import pyttsx3
 from selenium import webdriver
 import speech_recognition as sr
 import os
+import psutil
 
 ordinals = {
     "first": 0,
@@ -46,9 +47,6 @@ def recognize_speech():
     with microphone as input_device:
         input_audio = recognizer.listen(input_device, phrase_time_limit=5)
 
-    # this will contain system response
-    system_response = ""
-
     # System response in order to give feedback to the user
     system_speak("I'm processing your message")
     try:
@@ -78,6 +76,21 @@ def check_and_switch_tab(command):
     return True
 
 
+def point_of_the_page(command):
+    page_height = driver.execute_script("return document.documentElement.scrollHeight")
+    unit = page_height / 4
+
+    key = command.split(" ")[0]
+    if key in ordinals:
+        if key == "last":
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        else:
+            y = unit * ordinals[key]
+            driver.execute_script("window.scrollTo(0, %s);" % y)
+    else:
+        system_speak("Invalid section of the page, try again")
+
+
 # User's input is parsed in order to execute the correct action
 def parse_command():
     command = recognize_speech().lower()
@@ -95,9 +108,13 @@ def parse_command():
     elif 'close' in command:
 
         if check_and_switch_tab(command):
-            system_speak("I'm closing it")
-            driver.close()
-            driver.switch_to.window(driver.window_handles[-1])
+            if len(driver.window_handles) == 1:
+                system_speak('If you want to stop the application, say exit')
+
+            else:
+                system_speak("I'm closing it")
+                driver.close()
+                driver.switch_to.window(driver.window_handles[-1])
 
     elif 'switch' in command:
         check_and_switch_tab(command)
@@ -107,11 +124,23 @@ def parse_command():
         element.clear()
         element.click()
 
-    elif 'scroll the page' in command:
-        scroll_height = 0.1
-        while scroll_height < 9.9:
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight/%s);" % scroll_height)
-            scroll_height += 0.01
+    elif 'scroll' in command:
+        page_height = driver.execute_script("return document.documentElement.scrollHeight")
+
+        if 'down' in command:
+            scroll_height = 2
+            while scroll_height < page_height:
+                driver.execute_script("window.scrollTo(0, %s)" % scroll_height)
+                scroll_height += 0.8
+
+        if 'up' in command:
+            scroll_height = page_height - 2
+            while scroll_height > 0:
+                driver.execute_script("window.scrollTo(0, %s);" % scroll_height)
+                scroll_height -= 0.8
+
+    elif 'part' in command:
+        point_of_the_page(command)
 
     elif 'go back' in command:
         driver.back()
@@ -130,8 +159,18 @@ def parse_command():
     return False
 
 
+def kill_all():
+    processes = []
+    for proc in psutil.process_iter():
+        if proc.name() == "python.exe":
+            processes.append(proc)
+
+    for proc in processes:
+        proc.kill()
+
+
 system_speak("Hello, I'm your browser assistant! How may I help you?")
 
 while True:
     if parse_command():
-        break
+        kill_all()
