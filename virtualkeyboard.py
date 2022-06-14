@@ -5,6 +5,8 @@ from keyboard import Keyboard
 
 keyboard = Keyboard().create_keyboard()
 controller = Controller()
+
+# to avoid multiple clicks when performing a single click
 lastClick = time.time()
 
 
@@ -17,6 +19,7 @@ class VirtualKeyboard:
 
         global lastClick, keyboard
 
+        # information about the hand tracked
         lmList = hand["lmList"]
         fingers = self.hand_detector.fingersUp(hand)
         self.img = draw_keyboard(self.img, keyboard.get_keyboard())
@@ -25,11 +28,13 @@ class VirtualKeyboard:
             x, y = key.pos
             w, h = key.size
 
+            # selection mode
             if x < lmList[8][0] < x + w and y < lmList[8][1] < y + h:
                 draw_interaction(self.img, key.pos, key.size, key.text, (50, 50, 50))
                 distance, _ = self.hand_detector.findDistance(lmList[8][0:2], lmList[12][0:2])
 
-                if distance < 15 and time.time() - lastClick > 0.75 and fingers[1] == 1 and fingers[2] == 1:
+                # t = 18, pressing mode
+                if distance < 18 and time.time() - lastClick > 0.75 and fingers[1] == 1 and fingers[2] == 1:
                     if key.text == "Shift":
                         if keyboard.is_up():
                             new_keyboard = Keyboard(False).create_keyboard()
@@ -47,6 +52,7 @@ class VirtualKeyboard:
                     lastClick = time.time()
 
 
+# visual feedback on the gestural interface of what's happening
 def draw_interaction(img, pos, size, text, color):
     x, y = pos
     w, h = size
@@ -54,6 +60,7 @@ def draw_interaction(img, pos, size, text, color):
     cv2.putText(img, text, (x + 20, y + 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 3)
 
 
+# draw keyboard when keyboard modality is on
 def draw_keyboard(img, keyboard):
 
     for key in keyboard:
@@ -61,7 +68,7 @@ def draw_keyboard(img, keyboard):
 
     return img
 
-
+# utility function
 def parse_command(text):
 
     if text == "Space":

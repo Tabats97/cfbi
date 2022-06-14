@@ -12,6 +12,7 @@ ordinals = {
     "last": -1
 }
 
+# to avoid cookie settings every time the browser is launched
 settings = "user-data-dir=C:\\Users\\Tabats\\AppData\\Local\\Google\\Chrome\\User Data\\Default"
 dir_path = os.path.abspath(os.curdir)
 
@@ -36,7 +37,8 @@ recognizer = sr.Recognizer()
 
 # set these parameters to adjust microphone input sensibility (they depend on the specific device)
 recognizer.dynamic_energy_threshold = False
-recognizer.energy_threshold = 600
+recognizer.energy_threshold = 500
+
 
 # Microphone entity. The device_index parameter needs to be changed according to the input device that you want to use
 microphone = sr.Microphone(device_index=1)
@@ -76,11 +78,14 @@ def check_and_switch_tab(command):
     return True
 
 
+# return the part of the page requested by the user
 def point_of_the_page(command):
     page_height = driver.execute_script("return document.documentElement.scrollHeight")
     unit = page_height / 4
 
-    key = command.split(" ")[0]
+    words = command.split(" ")
+    index = words.index("part")
+    key = words[index-1]
     if key in ordinals:
         if key == "last":
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -125,19 +130,23 @@ def parse_command():
         element.click()
 
     elif 'scroll' in command:
-        page_height = driver.execute_script("return document.documentElement.scrollHeight")
+        if 'down' not in command and 'up' not in command:
+            system_speak("You need to specify in which direction to scroll the page")
 
-        if 'down' in command:
-            scroll_height = 2
-            while scroll_height < page_height:
-                driver.execute_script("window.scrollTo(0, %s)" % scroll_height)
-                scroll_height += 0.8
+        else:
+            page_height = driver.execute_script("return document.documentElement.scrollHeight")
 
-        if 'up' in command:
-            scroll_height = page_height - 2
-            while scroll_height > 0:
-                driver.execute_script("window.scrollTo(0, %s);" % scroll_height)
-                scroll_height -= 0.8
+            if 'down' in command:
+                scroll_height = 2
+                while scroll_height < page_height:
+                    driver.execute_script("window.scrollTo(0, %s)" % scroll_height)
+                    scroll_height += 0.9
+
+            if 'up' in command:
+                scroll_height = page_height - 2
+                while scroll_height > 0:
+                    driver.execute_script("window.scrollTo(0, %s);" % scroll_height)
+                    scroll_height -= 0.9
 
     elif 'part' in command:
         point_of_the_page(command)
@@ -159,18 +168,28 @@ def parse_command():
     return False
 
 
+# kill both speech and gestural modules
 def kill_all():
     processes = []
     for proc in psutil.process_iter():
         if proc.name() == "python.exe":
-            processes.append(proc)
+            pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
+            pinfo['vms'] = proc.memory_info().vms/ (1024 * 1024)
+            processes.append(pinfo)
 
-    for proc in processes:
-        proc.kill()
+    processes = sorted(processes, key=lambda process: process['vms'], reverse=True)
+
+    for element in processes:
+        pid = element['pid']
+        for proc in psutil.process_iter():
+            if proc.pid == pid:
+                proc.kill()
+                break
 
 
-system_speak("Hello, I'm your browser assistant! How may I help you?")
+system_speak("Hello, I'm your browser assistant.")
 
 while True:
+    system_speak("I'm ready for your command when you want.")
     if parse_command():
         kill_all()
